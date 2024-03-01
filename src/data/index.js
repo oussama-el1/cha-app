@@ -1,13 +1,12 @@
 import { faker } from "@faker-js/faker";
 import {
-  ChatCircleDots,
   Gear,
   GearSix,
-  Phone,
   SignOut,
   User,
-  Users,
 } from "phosphor-react";
+import { MdOutlineSettingsPhone } from "react-icons/md";
+import { PiUserListBold, PiChatsCircleBold  } from "react-icons/pi";
 
 const Profile_Menu = [
   {
@@ -27,15 +26,15 @@ const Profile_Menu = [
 const Nav_Buttons = [
   {
     index: 0,
-    icon: <ChatCircleDots />,
+    icon: <PiChatsCircleBold  />,
   },
   {
     index: 1,
-    icon: <Users />,
+    icon: <PiUserListBold />,
   },
   {
     index: 2,
-    icon: <Phone />,
+    icon: <MdOutlineSettingsPhone />,
   },
 ];
 

@@ -1,65 +1,22 @@
-import { Avatar, Box, Divider, IconButton, Stack, Switch } from "@mui/material";
-import { useTheme, styled } from "@mui/material/styles";
+import { Avatar, Box, Divider, IconButton, Stack, Typography } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import useSettings from '../../hooks/useSettings'
+import { RiQuestionFill  } from "react-icons/ri";
 
-import logo from "../../assets/Images/logo.ico";
+import logo4 from "../../assets/Images/logo4.png"
 import { Nav_Buttons } from "../../data";
 import { Gear } from "phosphor-react";
 import { faker } from '@faker-js/faker';
 
 
-const AntSwitch = styled(Switch)(({ theme }) => ({
-  width: 40,
-  height: 20,
-  padding: 0,
-  display: 'flex',
-  '&:active': {
-    '& .MuiSwitch-thumb': {
-      width: 15,
-    },
-    '& .MuiSwitch-switchBase.Mui-checked': {
-      transform: 'translateX(9px)',
-    },
-  },
-  '& .MuiSwitch-switchBase': {
-    padding: 2,
-    '&.Mui-checked': {
-      transform: 'translateX(20px)',
-      color: '#fff',
-      '& + .MuiSwitch-track': {
-        opacity: 1,
-        backgroundColor: theme.palette.mode === 'dark' ? '#177ddc' : '#1890ff',
-      },
-    },
-  },
-  '& .MuiSwitch-thumb': {
-    boxShadow: '0 2px 4px 0 rgb(0 35 11 / 20%)',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    transition: theme.transitions.create(['width'], {
-      duration: 200,
-    }),
-  },
-  '& .MuiSwitch-track': {
-    borderRadius: 20 / 2,
-    opacity: 1,
-    backgroundColor:
-      theme.palette.mode === 'dark' ? 'rgba(255,255,255,.35)' : 'rgba(0,0,0,.25)',
-    boxSizing: 'border-box',
-  },
-}));
-
 const DashboardLayout = () => {
 
   const theme = useTheme();
   const [selected, setSelected] = useState(0);
-  const { onToggleMode } = useSettings()
 
   return (
-    <>
+    <Stack direction={"row"}>
       <Box
         p={2}
         sx={{
@@ -78,18 +35,21 @@ const DashboardLayout = () => {
         >
           <Stack
             alignItems='Center'
-            spacing={4}
+            spacing={10}
           >
-            <Box
-              sx={{
-                backgroundColor: theme.palette.primary.main,
-                height: 64,
-                weight: 64,
-                borderRadius: 1.5,
-              }}
-            >
-              <img src={logo} alt="logo"></img>
-            </Box>
+            <Stack alignItems={"center"}>
+              <Box
+                sx={{
+                  backgroundColor: theme.palette.grey[0],
+                  height: 64,
+                  weight: 64,
+                  borderRadius: 1.5,
+                }}
+              >
+                <img src={logo4} alt="logo"></img>
+                <Typography variant="h5" sx={{color: "#000000", fontFamily: "Didot"}}> Binatna </Typography>
+              </Box>
+            </Stack>
             <Stack
               sx={{ width: "max-content" }}
               direction="column"
@@ -100,7 +60,7 @@ const DashboardLayout = () => {
                 el.index === selected ? (
                   <Box
                     sx={{
-                      backgroundColor: theme.palette.primary.main,
+                      backgroundColor: "#526D82",
                       borderRadius: 1.5,
                     }}
                   >
@@ -126,7 +86,7 @@ const DashboardLayout = () => {
                 selected === 3 ?
                   <Box
                     sx={{
-                      backgroundColor: theme.palette.primary.main,
+                      backgroundColor: "#526D82",
                       borderRadius: 1.5,
                     }}
                   >
@@ -143,13 +103,13 @@ const DashboardLayout = () => {
           </Stack>
           <Stack spacing={4}>
             {/* switch */}
-            <AntSwitch onChange={() => onToggleMode()} defaultChecked />
+            <IconButton> <RiQuestionFill size={25} />  </IconButton>
             <Avatar src={faker.image.avatar()} />
           </Stack>
         </Stack>
       </Box>
       <Outlet />
-    </>
+    </Stack>
   );
 };
 
