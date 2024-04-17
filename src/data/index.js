@@ -18,7 +18,7 @@ const Profile_Menu = [
     icon: <Gear />,
   },
   {
-    title: "Profile",
+    title: "LogOut",
     icon: <SignOut />,
   },
 ];
@@ -172,7 +172,6 @@ const Chat_History = [
     incoming: false,
     outgoing: true,
   },
-
   {
     type: "msg",
     subtype: "doc",

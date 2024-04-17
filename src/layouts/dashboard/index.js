@@ -1,11 +1,11 @@
-import { Avatar, Box, Divider, IconButton, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Divider, IconButton, Stack, Typography, Menu, MenuItem } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { RiQuestionFill  } from "react-icons/ri";
+import { RiQuestionFill } from "react-icons/ri";
 
 import logo4 from "../../assets/Images/logo4.png"
-import { Nav_Buttons } from "../../data";
+import { Nav_Buttons, Profile_Menu } from "../../data";
 import { Gear } from "phosphor-react";
 import { faker } from '@faker-js/faker';
 
@@ -14,6 +14,15 @@ const DashboardLayout = () => {
 
   const theme = useTheme();
   const [selected, setSelected] = useState(0);
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Stack direction={"row"}>
@@ -47,7 +56,7 @@ const DashboardLayout = () => {
                 }}
               >
                 <img src={logo4} alt="logo"></img>
-                <Typography variant="h5" sx={{color: "#000000", fontFamily: "Didot"}}> Binatna </Typography>
+                <Typography variant="h5" sx={{ color: "#000000", fontFamily: "Didot" }}> Binatna </Typography>
               </Box>
             </Stack>
             <Stack
@@ -102,9 +111,45 @@ const DashboardLayout = () => {
             </Stack>
           </Stack>
           <Stack spacing={4}>
-            {/* switch */}
             <IconButton> <RiQuestionFill size={25} />  </IconButton>
-            <Avatar src={faker.image.avatar()} />
+            <Avatar id="basic-button"
+              aria-controls={open ? 'basic-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? 'true' : undefined}
+              onClick={handleClick}
+              src={faker.image.avatar()} />
+              {/* -------- Menu ---------*/}
+            <Menu
+              id="basic-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              MenuListProps={{
+                'aria-labelledby': 'basic-button',
+              }}
+              anchorOrigin={{
+                vertical: 'buttom',
+                horizontal: 'right',
+              }}
+              transformOrigin={{
+                vertical: 'buttom',
+                horizontal: 'left',
+              }}
+            >
+              <Stack spacing={1} px={1} >
+                {Profile_Menu.map((el, index) => ( // Added parentheses for return statement
+                  <MenuItem key={index} onClick={handleClose}>
+                      {
+                        <Stack sx={{width: 100}} direction="row" alignItems="center" justifyContent="space-between">
+                          <span>{el.title}</span>
+                          {el.icon}
+                        </Stack>
+                      }
+                  </MenuItem>
+                ))
+                }
+              </Stack>
+            </Menu>
           </Stack>
         </Stack>
       </Box>
