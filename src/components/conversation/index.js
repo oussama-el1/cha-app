@@ -22,10 +22,8 @@ import {
     User,
 } from "phosphor-react"
 import Fab from '@mui/material/Fab';
-
-
-
-
+import { ToggleSidebar } from "../../redux/slices/app";
+import { useDispatch } from "react-redux";
 
 
 const StyledInput = styled(TextField)(({ theme }) => ({
@@ -34,7 +32,6 @@ const StyledInput = styled(TextField)(({ theme }) => ({
         paddingBottom: "12px",
     }
 }));
-
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
     '& .MuiBadge-badge': {
@@ -64,7 +61,6 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
         },
     },
 }));
-
 
 const Actions = [
     {
@@ -98,11 +94,6 @@ const Actions = [
         title: "Contact",
     },
 ];
-
-
-
-
-
 
 const ChatInput = ({ setDisplayemojis }) => {
     const [openActions, setOpenActions] = React.useState(false);
@@ -159,9 +150,9 @@ const ChatInput = ({ setDisplayemojis }) => {
 }
 
 
-
 const Conversation = () => {
     const [Displayemojis, setDisplayemojis] = useState(false)
+    const dispatch = useDispatch()
     return (
         <Stack height={"100%"} maxHeight={"100vh"} width={"auto"}>
             {/* Header */}
@@ -173,7 +164,10 @@ const Conversation = () => {
                     boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)"
                 }}>
                 <Stack direction={"row"} alignItems={"center"} justifyContent={"space-between"} sx={{ width: "100%", height: "100%" }}>
-                    <Stack direction={"row"} spacing={2}>
+                    <Stack onClick={() => {
+                        dispatch(ToggleSidebar());
+                    }}
+                        direction={"row"} spacing={2}>
                         <Box>
                             <StyledBadge
                                 overlap="circular"

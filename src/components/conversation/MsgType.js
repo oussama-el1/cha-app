@@ -9,7 +9,7 @@ import { Message_options } from "../../data";
 
 
 
-const DocMsg = ({ el }) => {
+const DocMsg = ({ el, menu = true }) => {
     const theme = useTheme();
     return (
         <Stack
@@ -35,14 +35,12 @@ const DocMsg = ({ el }) => {
                     <Typography variant="body2" color={el.incoming ? theme.palette.text : "#fff"} >{el.message}</Typography>
                 </Stack>
             </Box>
-            <MsgOptions />
+            {menu && <MsgOptions />}
         </Stack>
     )
 }
 
-
-
-const Linkmsg = ({ el }) => {
+const LinkMsg = ({ el, menu = true }) => {
     const theme = useTheme();
     return (
         <Stack
@@ -74,7 +72,7 @@ const Linkmsg = ({ el }) => {
                     </Stack>
                 </Stack>
             </Box>
-            <MsgOptions />
+            {menu && <MsgOptions />}
         </Stack>
     )
 }
@@ -107,8 +105,6 @@ const ReplayMsg = ({ el }) => {
         </Stack>
     )
 }
-
-
 
 const Imgmsg = ({ el }) => {
     const theme = useTheme();
@@ -222,4 +218,4 @@ const MsgOptions = () => {
 
 
 
-export { Timeline, TextMsg, Imgmsg, ReplayMsg, Linkmsg, DocMsg };
+export { Timeline, TextMsg, Imgmsg, ReplayMsg, LinkMsg, DocMsg };
