@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { dispatch } from "../store";
+import axios from "../../utils/axios";
 
 // ----------------------------------------------------------------------
 
@@ -65,17 +66,66 @@ const slice = createSlice({
   },
 });
 
-// Reducer
-export default slice.reducer;
-
 
 export function ToggleSidebar() {
   return async () => {
     dispatch(slice.actions.toggleSideBar());
   };
 }
+
 export function UpdateSidebarType(type) {
   return async () => {
     dispatch(slice.actions.updateSideBarType({ type }));
   };
 }
+
+
+// Reducer
+export default slice.reducer;
+
+
+export const closeSnackBar = () => async (dispatch, getState) => {
+  dispatch(slice.actions.closeSnackBar());
+};
+
+export const showSnackbar =
+  ({ severity, message }) =>
+  async (dispatch, getState) => {
+    dispatch(
+      slice.actions.openSnackBar({
+        message,
+        severity,
+      })
+    );
+
+    setTimeout(() => {
+      dispatch(slice.actions.closeSnackBar());
+    }, 4000);
+};
+
+
+export function UpdateTab(tab) {
+  return async (dispatch, getState) => {
+    dispatch(slice.actions.updateTab(tab));
+  };
+}
+
+
+export const FetchUserProfile = () => {
+  return async (dispatch, getState) => {
+    axios
+      .get("/user/get-me", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getState().auth.token}`,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+        dispatch(slice.actions.fetchUser({ user: response.data.data }));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+};

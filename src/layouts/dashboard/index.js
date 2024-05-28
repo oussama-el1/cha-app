@@ -8,21 +8,67 @@ import logo4 from "../../assets/Images/logo4.png"
 import { Nav_Buttons, Profile_Menu } from "../../data";
 import { Gear } from "phosphor-react";
 import { faker } from '@faker-js/faker';
+import { useNavigate, Navigate } from "react-router-dom";
+
+
+const isAuthenticated = true;
+
+const getPath = (index) => {
+  switch (index) {
+    case 0:
+      return "/app";
+
+    case 1:
+      return "/group";
+
+    case 2:
+      return "/call";
+
+    case 3:
+      return "/settings";
+
+    default:
+      break;
+  }
+};
+
+
+const getMenuPaths = (index) => {
+  switch (index) {
+    case 0:
+      return "/profile";
+
+    case 1:
+      return "/settings";
+
+    case 2:
+      return "/auth/login";
+
+    default:
+      break;
+  }
+};
 
 
 const DashboardLayout = () => {
 
   const theme = useTheme();
   const [selected, setSelected] = useState(0);
-
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
   const handleClose = () => {
+    navigate()
     setAnchorEl(null);
   };
+
+  if(!isAuthenticated) {
+    return <Navigate to="/auth/login" />
+  }
 
   return (
     <Stack direction={"row"}>
@@ -81,7 +127,10 @@ const DashboardLayout = () => {
                 ) : (
                   <IconButton
                     onClick={
-                      () => setSelected(el.index)
+                      () => {
+                        setSelected(el.index)
+                        navigate(getPath(el.index))
+                      }
                     }
                     sx={{ width: "max-content", color: theme.palette.mode === "light" ? "#000" : theme.palette.text.primary }}
                     key={el.index}
@@ -104,7 +153,7 @@ const DashboardLayout = () => {
                     </IconButton>
                   </Box>
                   :
-                  <IconButton onClick={() => setSelected(3)} sx={{ width: "max-content", color: theme.palette.mode === "light" ? "#000" : theme.palette.text.primary }}>
+                  <IconButton onClick={() => {setSelected(3); navigate(getPath(3))}} sx={{ width: "max-content", color: theme.palette.mode === "light" ? "#000" : theme.palette.text.primary }}>
                     <Gear />
                   </IconButton>
               }
@@ -137,14 +186,17 @@ const DashboardLayout = () => {
               }}
             >
               <Stack spacing={1} px={1} >
-                {Profile_Menu.map((el, index) => ( // Added parentheses for return statement
-                  <MenuItem key={index} onClick={handleClose}>
-                      {
-                        <Stack sx={{width: 100}} direction="row" alignItems="center" justifyContent="space-between">
+                {Profile_Menu.map((el, idx) => (
+                  <MenuItem 
+                    key={idx}
+                    onClick={() => {handleClick();}}
+                    >
+                      <Stack 
+                          onClick={() => {navigate(getMenuPaths(idx));}}
+                          sx={{width: 100}} direction="row" alignItems="center" justifyContent="space-between">
                           <span>{el.title}</span>
                           {el.icon}
                         </Stack>
-                      }
                   </MenuItem>
                 ))
                 }
