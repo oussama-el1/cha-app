@@ -23,7 +23,7 @@ export const NAVBAR = {
   DASHBOARD_ITEM_HORIZONTAL_HEIGHT: 32,
 };
 
-export const BASE_URL = "https://api.chat.codingmonk.in/";
+export const BASE_URL = "http://localhost:3001";
 
 export const allLangs = [
   {

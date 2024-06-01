@@ -1,8 +1,4 @@
-import { Link as RouterLink } from "react-router-dom";
-// sections
-import { Stack, Typography, Link } from "@mui/material";
-import AuthSocial from "../../sections/auth/AuthSocial";
-import Login from "../../sections/auth/LoginForm";
+import { Stack, Typography } from "@mui/material";
 import VerifyForm from "../../sections/auth/VerifyForm";
 
 // ----------------------------------------------------------------------
@@ -15,7 +11,7 @@ export default function LoginPage() {
 
         <Stack direction="row" spacing={0.5}>
           <Typography variant="body2">
-            Sent to email (shreyanshshah242@gmail.com)
+            Sent to email (oelhadraoui8@gmail.com)
           </Typography>
         </Stack>
       </Stack>

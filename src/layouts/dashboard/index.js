@@ -1,6 +1,6 @@
 import { Avatar, Box, Divider, IconButton, Stack, Typography, Menu, MenuItem } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { RiQuestionFill } from "react-icons/ri";
 
@@ -9,9 +9,12 @@ import { Nav_Buttons, Profile_Menu } from "../../data";
 import { Gear } from "phosphor-react";
 import { faker } from '@faker-js/faker';
 import { useNavigate, Navigate } from "react-router-dom";
+import { useDispatch } from '../../redux/store'
+import { useSelector } from "react-redux";
+import { LogoutUser } from "../../redux/slices/auth";
+import { socket, connectSocket } from "../../socket";
+import { showSnackbar } from "../../redux/slices/app";
 
-
-const isAuthenticated = true;
 
 const getPath = (index) => {
   switch (index) {
@@ -52,6 +55,8 @@ const getMenuPaths = (index) => {
 
 const DashboardLayout = () => {
 
+  const dispatch = useDispatch();
+  const {isLoggedIn} = useSelector((state) => state.auth);
   const theme = useTheme();
   const [selected, setSelected] = useState(0);
   const navigate = useNavigate();
@@ -62,11 +67,66 @@ const DashboardLayout = () => {
   };
 
   const handleClose = () => {
-    navigate()
     setAnchorEl(null);
   };
 
-  if(!isAuthenticated) {
+  const user_id = window.localStorage.getItem("user_id")
+
+  useEffect(() => {
+
+    if (isLoggedIn) {
+      window.onload = function () {
+        if(!window.location.hash) {
+          window.location = window.location + '#loaded';
+          window.location.reload();
+        }
+      }
+
+      window.onload();
+
+      if (!socket) {
+        connectSocket(user_id)
+      }
+
+      // "new_friend_request"
+
+      socket.on("new_friend_request", (data) => {
+        dispatch(
+          showSnackbar({
+            severity: "success",
+            message: "New friend request received",
+          })
+        );
+      });
+
+      socket.on("request_accepted", (data) => {
+        dispatch(
+          showSnackbar({
+            severity: "success",
+            message: "Friend Request Accepted",
+          })
+        );
+      });
+
+      socket.on("request_sent", (data) => {
+        dispatch(showSnackbar({
+            severity: "success",
+            message: data.message 
+          })
+        );
+      });
+    }
+
+    // Remove event listener on component unmount
+    return () => {
+      socket?.off("new_friend_request");
+      socket?.off("request_accepted");
+      socket?.off("request_sent");
+    };
+
+  }, [isLoggedIn, socket]);
+
+  if(!isLoggedIn) {
     return <Navigate to="/auth/login" />
   }
 
@@ -189,10 +249,19 @@ const DashboardLayout = () => {
                 {Profile_Menu.map((el, idx) => (
                   <MenuItem 
                     key={idx}
-                    onClick={() => {handleClick();}}
+                    onClick={() => {
+                      handleClick();
+                    }}
                     >
                       <Stack 
-                          onClick={() => {navigate(getMenuPaths(idx));}}
+                          onClick={() => {
+                            if (idx === 2) {
+                              socket.emit("end", {user_id});
+                              dispatch(LogoutUser());
+                            } else {
+                              navigate(getMenuPaths(idx));
+                            }
+                          }}
                           sx={{width: 100}} direction="row" alignItems="center" justifyContent="space-between">
                           <span>{el.title}</span>
                           {el.icon}

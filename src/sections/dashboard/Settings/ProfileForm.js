@@ -8,6 +8,9 @@ import { RHFTextField, RHFUploadAvatar } from "../../../components/hook-form";
 import { Stack } from "@mui/material";
 import { LoadingButton } from "@mui/lab";
 import { useDispatch, useSelector } from "react-redux";
+/* import { UpdateUserProfile } from "../../../redux/slices/app";
+ */
+
 
 const ProfileForm = () => {
   const dispatch = useDispatch();
@@ -41,14 +44,23 @@ const ProfileForm = () => {
 
   const values = watch();
 
+
+  /* 
   const onSubmit = async (data) => {
     try {
       //   Send API request
       console.log("DATA", data);
+      dispatch(
+        UpdateUserProfile({
+          firstName: data?.firstName,
+          about: data?.about,
+          avatar: file,
+        })
+      );
     } catch (error) {
       console.error(error);
     }
-  };
+  }; */
 
   const handleDrop = useCallback(
     (acceptedFiles) => {
@@ -68,7 +80,7 @@ const ProfileForm = () => {
   );
 
   return (
-    <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+    <FormProvider methods={methods} /* onSubmit={handleSubmit(onSubmit)} */>
       <Stack spacing={4}>
         <RHFUploadAvatar name="avatar" maxSize={3145728} onDrop={handleDrop} />
 

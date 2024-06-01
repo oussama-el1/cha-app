@@ -17,6 +17,7 @@ import { useDispatch } from "react-redux";
 
 export default function AuthLoginForm() {
   const dispatch = useDispatch();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const LoginSchema = Yup.object().shape({
@@ -27,8 +28,8 @@ export default function AuthLoginForm() {
   });
 
   const defaultValues = {
-    email: "elhadraoui@gmail.com",
-    password: "demo1234",
+    email: "oelhadraoui8@gmail.com",
+    password: "123456.",
   };
 
   const methods = useForm({

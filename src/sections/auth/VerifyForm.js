@@ -11,12 +11,13 @@ import { Eye, EyeSlash } from "phosphor-react";
 import RHFCodes from "../../components/hook-form/RHFCodes";
 import { useDispatch, useSelector } from "react-redux";
 import { VerifyEmail } from "../../redux/slices/auth";
+import { LoadingButton } from "@mui/lab";
 
 // ----------------------------------------------------------------------
 
 export default function VerifyForm() {
   const dispatch = useDispatch();
-  const { email } = useSelector((state) => state.auth);
+  const { email, isLoading } = useSelector((state) => state.auth);
   const VerifyCodeSchema = Yup.object().shape({
     code1: Yup.string().required("Code is required"),
     code2: Yup.string().required("Code is required"),
@@ -68,8 +69,9 @@ export default function VerifyForm() {
           inputs={["code1", "code2", "code3", "code4", "code5", "code6"]}
         />
 
-        <Button
+        <LoadingButton
           fullWidth
+          loading={isLoading}
           size="large"
           type="submit"
           variant="contained"
@@ -86,7 +88,7 @@ export default function VerifyForm() {
           }}
         >
           Verify
-        </Button>
+        </LoadingButton>
       </Stack>
     </FormProvider>
   );

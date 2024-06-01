@@ -10,6 +10,17 @@ const initialState = {
     open: false,
     type: "CONTACT", // can be CONTACT, STARRED, SHARED
   },
+
+  snackbar: {
+    open: null,
+    message: null,
+    severity: null,
+  },
+
+  users: [], // all users of app who are not friends and not requested yet
+  all_users: [],
+  friends: [], // all friends
+  friendRequests: [], // all friend requests
 };
 
 const slice = createSlice({
@@ -59,10 +70,6 @@ const slice = createSlice({
     updateFriendRequests(state, action) {
       state.friendRequests = action.payload.requests;
     },
-    selectConversation(state, action) {
-      state.chat_type = "individual";
-      state.room_id = action.payload.room_id;
-    },
   },
 });
 
@@ -109,6 +116,89 @@ export function UpdateTab(tab) {
     dispatch(slice.actions.updateTab(tab));
   };
 }
+
+
+
+export function FetchUsers() {
+  return async (dispatch, getState) => {
+    await axios
+      .get(
+        "/user/get-users",
+
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getState().auth.token}`,
+          },
+        }
+      )
+      .then((response) => {
+        console.log(response);
+        dispatch(slice.actions.updateUsers({ users: response.data.data }));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+}
+
+
+
+export function FetchFriends() {
+  return async (dispatch, getState) => {
+    await axios
+      .get(
+        "/user/get-friends",
+
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getState().auth.token}`,
+          },
+        }
+      )
+      .then((response) => {
+        console.log(response);
+        dispatch(slice.actions.updateFriends({ friends: response.data.data }));
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+}
+
+
+export function FetchFriendRequests() {
+  return async (dispatch, getState) => {
+    await axios
+      .get(
+        "/user/get-requests",
+
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${getState().auth.token}`,
+          },
+        }
+      )
+      .then((response) => {
+        console.log(response);
+        dispatch(
+          slice.actions.updateFriendRequests({ requests: response.data.data })
+        );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+}
+
+
+
+
+
+
+
 
 
 export const FetchUserProfile = () => {

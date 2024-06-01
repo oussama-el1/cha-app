@@ -1,4 +1,4 @@
-import React from "react";
+import { React, useState } from "react";
 import { Box, Typography, Stack, IconButton, InputBase, Button, Divider, Avatar, Badge } from "@mui/material";
 import { styled, alpha } from "@mui/material/styles"
 /* import { faker } from '@faker-js/faker'; */
@@ -7,6 +7,10 @@ import { IoIosCloseCircleOutline } from "react-icons/io";
 import { TbPinned } from "react-icons/tb";
 import { TbMessageCircleSearch } from "react-icons/tb";
 import { PiArchiveDuotone } from "react-icons/pi";
+import { Users } from "phosphor-react";
+import Friends from "../../sections/dashboard/Friends";
+
+
 
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
@@ -37,8 +41,6 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
         },
     },
 }));
-
-
 
 const ChatElement = ({ id, name, img, msg, time, unread, online }) => {
     return (
@@ -114,73 +116,105 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 
 const Chats = () => {
+
+
+    const [openDialog, setOpenDialog] = useState(false);
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+    };
+
+    const handleOpenDialog = () => {
+        setOpenDialog(true);
+    };
+
+
+
+
     return (
-        <Box sx={{ position: "relative",
-                    width: 320,
-                    backgroundColor: "#DDE6ED",
-                    boxShadow: '0px 0px 2px rgba(0, 0, 0, 0.25)'
-                }}>
-            <Stack p={3}
+        <>
+            <Box sx={{
+                position: "relative",
+                width: 320,
+                backgroundColor: "#DDE6ED",
+                boxShadow: '0px 0px 2px rgba(0, 0, 0, 0.25)'
+            }}>
+                <Stack p={3}
                     spacing={2}
-                    sx={{ height: "100vh"}
-                }>
-                <Stack direction="row" alignItems="Center" justifyContent="space-between">
-                    <Typography variant="h5">
-                        InBox
-                    </Typography>
-                    <IconButton>
-                        <IoIosCloseCircleOutline />
-                    </IconButton>
-                </Stack>
-                <Stack>
-                    <Search>
-                        <SearchIconWrapper>
-                            <TbMessageCircleSearch color="#709CE6" />
-                        </SearchIconWrapper>
-                        <StyledInputBase placeholder="Shearch ..." />
-                    </Search>
-                </Stack>
-                <Stack spacing={1}>
-                    <Stack direction="row" alignItems={'center'} spacing={1.5} >
-                        <PiArchiveDuotone />
-                        <Button> Archived </Button>
-                    </Stack>
-                    <Divider />
-                </Stack>
-                <Stack spacing={2} direction={'column'} sx={{ flexGrow: 1, overflowX: "hidden", overflowY: "scroll", height: "100%", paddingInline: "8px"}}>
-                    <Stack spacing={1.5}>
-                        <Typography variant="subtitle2" sx={{ color: "#676767" }}>
-                            <TbPinned size={15} />  -   Pinned
+                    sx={{ height: "100vh" }
+                    }>
+                    <Stack direction="row" alignItems="Center" justifyContent="space-between">
+                        <Typography variant="h5">
+                            InBox
                         </Typography>
-                        {
-                            ChatList.filter((el) => el.pinned).map((el) => {
-                                return <ChatElement {...el} />
-                            })
-                        }
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                        >
+                            <IconButton
+                                onClick={() => {
+                                    handleOpenDialog();
+                                }}
+                                sx={{ width: "max-content" }}
+                            >
+                                <Users />
+                            </IconButton>
+                            <IconButton>
+                                <IoIosCloseCircleOutline />
+                            </IconButton>
+                        </Stack>
                     </Stack>
-                    <Stack spacing={1.5}>
-                        <Typography variant="subtitle2" sx={{ color: "#676767" }}>
-                            All Chats 
-                        </Typography>
-                        {
-                            ChatList.filter((el) => !el.pinned).map((el) => {
-                                return <ChatElement {...el} />
-                            })
-                        }
+                    <Stack>
+                        <Search>
+                            <SearchIconWrapper>
+                                <TbMessageCircleSearch color="#709CE6" />
+                            </SearchIconWrapper>
+                            <StyledInputBase placeholder="Shearch ..." />
+                        </Search>
                     </Stack>
-                    <style>
-                    {`
-                        /* Customize scrollbar */
-                        ::-webkit-scrollbar {
-                            width: 8px;
-                            display: none;
-                        }
-                    `}
-                    </style>
+                    <Stack spacing={1}>
+                        <Stack direction="row" alignItems={'center'} spacing={1.5} >
+                            <PiArchiveDuotone />
+                            <Button> Archived </Button>
+                        </Stack>
+                        <Divider />
+                    </Stack>
+                    <Stack spacing={2} direction={'column'} sx={{ flexGrow: 1, overflowX: "hidden", overflowY: "scroll", height: "100%", paddingInline: "8px" }}>
+                        <Stack spacing={1.5}>
+                            <Typography variant="subtitle2" sx={{ color: "#676767" }}>
+                                <TbPinned size={15} />  -   Pinned
+                            </Typography>
+                            {
+                                ChatList.filter((el) => el.pinned).map((el) => {
+                                    return <ChatElement {...el} />
+                                })
+                            }
+                        </Stack>
+                        <Stack spacing={1.5}>
+                            <Typography variant="subtitle2" sx={{ color: "#676767" }}>
+                                All Chats
+                            </Typography>
+                            {
+                                ChatList.filter((el) => !el.pinned).map((el) => {
+                                    return <ChatElement {...el} />
+                                })
+                            }
+                        </Stack>
+                        <style>
+                            {`
+                            /* Customize scrollbar */
+                            ::-webkit-scrollbar {
+                                width: 8px;
+                                display: none;
+                            }
+                        `}
+                        </style>
+                    </Stack>
                 </Stack>
-            </Stack>
-        </Box>
-    )
-}
+            </Box>
+            {openDialog && <Friends open={openDialog} handleClose={handleCloseDialog} />}
+        </>
+    );
+};
 
 export default Chats
