@@ -53,7 +53,6 @@ const FriendsList = () => {
 };
 
 
-
 const RequestsList = () => {
   const dispatch = useDispatch();
 
@@ -71,7 +70,6 @@ const RequestsList = () => {
     </>
   );
 };
-
 
 
 const Friends = ({ open, handleClose }) => {

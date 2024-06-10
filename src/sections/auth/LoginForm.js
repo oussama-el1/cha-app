@@ -28,8 +28,8 @@ export default function AuthLoginForm() {
   });
 
   const defaultValues = {
-    email: "oelhadraoui8@gmail.com",
-    password: "123456.",
+    email: "",
+    password: "",
   };
 
   const methods = useForm({

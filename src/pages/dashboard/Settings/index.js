@@ -20,11 +20,16 @@ import {
 } from "phosphor-react";
 
 import { useTheme } from "@mui/material/styles";
-import { faker } from "@faker-js/faker";
 import ThemeDialog from "./ThemeDialog";
+import { useSelector } from "react-redux";
+
+
+
 
 const Settings = () => {
   const theme = useTheme();
+
+  const { current_conversation } = useSelector((state) => state.conversation.direct_chat);
 
   const [openTheme, setOpenTheme] = useState(false);
 
@@ -111,12 +116,11 @@ const Settings = () => {
             {/* Profile */}
             <Stack direction="row" spacing={3}>
               <Avatar
-                src={faker.image.avatar()}
                 sx={{ height: 56, width: 56 }}
               />
               <Stack spacing={0.5}>
-                <Typography variant="article">{`${faker.name.firstName()} ${faker.name.lastName()}`}</Typography>
-                <Typography variant="body2">{faker.random.words()}</Typography>
+                <Typography variant="article"> { " +91 62543 28 739 " }</Typography>
+                <Typography variant="body2"> { " 😎 " }</Typography>
               </Stack>
             </Stack>
             {/* List */}

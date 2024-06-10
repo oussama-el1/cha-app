@@ -20,7 +20,7 @@ export default function AuthResetPasswordForm() {
 
   const methods = useForm({
     resolver: yupResolver(ResetPasswordSchema),
-    defaultValues: { email: "oelhadraoui8@gmail.com" },
+    defaultValues: { email: "" },
   });
 
   const { handleSubmit } = methods;

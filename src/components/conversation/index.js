@@ -1,14 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Stack, Box, Avatar, Badge, Typography, IconButton, Divider, TextField, InputAdornment } from "@mui/material";
 import { styled } from "@mui/material/styles"
-import { faker } from "@faker-js/faker"
-import { PiVideoCamera } from "react-icons/pi";
-import { BiPhone } from "react-icons/bi";
+import { faker } from "@faker-js/faker";
 import { TbMessageSearch } from "react-icons/tb";
 import { IoMdMore } from "react-icons/io";
-import { ImLink } from "react-icons/im";
-import { RiEmojiStickerLine } from "react-icons/ri";
-import { RiSendPlaneFill } from "react-icons/ri";
 import Message from "./Message";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
@@ -20,11 +15,33 @@ import {
     Image,
     Sticker,
     User,
+    LinkSimple,
+    Smiley,
+    PaperPlaneTilt
 } from "phosphor-react"
 import Fab from '@mui/material/Fab';
 import { ToggleSidebar } from "../../redux/slices/app";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    FetchCurrentMessages,
+    SetCurrentConversation,
+} from "../../redux/slices/conversation";
+import { socket } from "../../socket";
 
+
+
+function linkify(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(
+      urlRegex,
+      (url) => `<a href="${url}" target="_blank">${url}</a>`
+    );
+  }
+  
+  function containsUrl(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return urlRegex.test(text);
+  }
 
 const StyledInput = styled(TextField)(({ theme }) => ({
     "& .MuiInputBase-input": {
@@ -95,67 +112,152 @@ const Actions = [
     },
 ];
 
-const ChatInput = ({ setDisplayemojis }) => {
+const ChatInput = ({
+    openPicker,
+    setOpenPicker,
+    setValue,
+    value,
+    inputRef,
+    onSendMessage,
+}) => {
     const [openActions, setOpenActions] = React.useState(false);
-    return (<StyledInput fullWidth placeholder="Message" variant="filled" InputProps={{
-        disableUnderline: true,
-        startAdornment: (
-            <Stack sx={{ width: "max-content" }}>
-                <Stack
-                    sx={{
-                        position: "relative",
-                        display: openActions ? "inline-block" : "none",
-                        width: "max-content",
-                    }}
-                >
-                    {Actions.map((el) => (
-                        <Tooltip placement="right" title={el.title}>
-                            <Fab
+
+    const handleKeyPress = (event) => {
+        if (event.key === "Enter") {
+            onSendMessage();
+        }
+    };
+
+    return (
+        <StyledInput
+            inputRef={inputRef}
+            value={value}
+            onChange={(event) => {
+                setValue(event.target.value);
+            }}
+            onKeyPress={handleKeyPress}
+            fullWidth
+            placeholder="Write a message..."
+            variant="filled"
+            InputProps={{
+                disableUnderline: true,
+                startAdornment: (
+                    <Stack sx={{ width: "max-content" }}>
+                        <Stack
+                            sx={{
+                                position: "relative",
+                                display: openActions ? "inline-block" : "none",
+                            }}
+                        >
+                            {Actions.map((el) => (
+                                <Tooltip key={el.title} placement="right" title={el.title}>
+                                    <Fab
+                                        onClick={() => {
+                                            setOpenActions(!openActions);
+                                        }}
+                                        sx={{
+                                            position: "absolute",
+                                            top: -el.y,
+                                            backgroundColor: el.color,
+                                        }}
+                                        aria-label="add"
+                                    >
+                                        {el.icon}
+                                    </Fab>
+                                </Tooltip>
+                            ))}
+                        </Stack>
+
+                        <InputAdornment>
+                            <IconButton
                                 onClick={() => {
                                     setOpenActions(!openActions);
                                 }}
-                                sx={{
-                                    position: "absolute",
-                                    top: -el.y,
-                                    backgroundColor: el.color,
-                                }}
-                                aria-label="add"
                             >
-                                {el.icon}
-                            </Fab>
-                        </Tooltip>
-                    ))}
-                </Stack>
-
-                <InputAdornment>
-                    <IconButton
-                        onClick={() => {
-                            setOpenActions(!openActions);
-                        }}
-                    >
-                        <ImLink />
-                    </IconButton>
-                </InputAdornment>
-            </Stack>
-        ),
-        endAdornment:
-            <InputAdornment>
-                <IconButton onClick={() => {
-                    setDisplayemojis((pervSatate) => !pervSatate);
-                }}>
-                    <RiEmojiStickerLine />
-                </IconButton>
-            </InputAdornment>
-    }} />)
-}
+                                <LinkSimple />
+                            </IconButton>
+                        </InputAdornment>
+                    </Stack>
+                ),
+                endAdornment: (
+                    <Stack sx={{ position: "relative" }}>
+                        <InputAdornment>
+                            <IconButton
+                                onClick={() => {
+                                    setOpenPicker(!openPicker);
+                                }}
+                            >
+                                <Smiley />
+                            </IconButton>
+                        </InputAdornment>
+                    </Stack>
+                ),
+            }}
+        />
+    );
+};
 
 
 const Conversation = () => {
-    const [Displayemojis, setDisplayemojis] = useState(false)
-    const dispatch = useDispatch()
+    const user_id = window.localStorage.getItem("user_id");
+    const [Displayemojis, setDisplayemojis] = useState(false);
+    const dispatch = useDispatch();
+    const { conversations, current_conversation } = useSelector((state) => state.conversation.direct_chat);
+    const { room_id } = useSelector((state) => state.app);
+    const inputRef = useRef(null);
+    const [value, setValue] = useState("");
+    const messageListRef = useRef(null);
+
+    useEffect(() => {
+        if (room_id && conversations.length > 0) {
+            const current = conversations.find((el) => el?.id === room_id);
+
+            if (current) {
+                socket.emit("get_messages", { conversation_id: current?.id }, (data) => {
+                    console.log(data, "List of messages");
+                    dispatch(FetchCurrentMessages({ messages: data }));
+                });
+
+                dispatch(SetCurrentConversation(current));
+            }
+        }
+    }, [room_id, conversations, dispatch]);
+
+    const handleEmojiClick = (emoji) => {
+        const input = inputRef.current;
+        if (input) {
+            const selectionStart = input.selectionStart;
+            const selectionEnd = input.selectionEnd;
+            setValue(
+                value.substring(0, selectionStart) + emoji + value.substring(selectionEnd)
+            );
+            input.selectionStart = input.selectionEnd = selectionStart + 1;
+        }
+    };
+
+    const { current_messages } = useSelector((state) => state.conversation.direct_chat);
+
+    useEffect(() => {
+        messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+    }, [current_messages]);
+
+    const handleSendMessage = () => {
+        if (value.trim() !== "") {
+            socket.emit("text_message", {
+                message: linkify(value),
+                conversation_id: room_id,
+                from: user_id,
+                to: current_conversation.user_id,
+                type: containsUrl(value) ? "Link" : "Text",
+            });
+            setValue("");
+        }
+    };
+
+    const touser = conversations.find((el) => el.id === room_id);
+
     return (
         <Stack height={"100%"} maxHeight={"100vh"} width={"auto"}>
-            {/* Header */}
             <Box
                 p={2}
                 sx={{
@@ -169,25 +271,24 @@ const Conversation = () => {
                     }}
                         direction={"row"} spacing={2}>
                         <Box>
-                            <StyledBadge
-                                overlap="circular"
-                                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                                variant="dot">
-                                <Avatar src={faker.image.avatar()} alt={faker.name.fullName()}></Avatar>
-                            </StyledBadge>
+                            {
+                                touser?.online 
+                                ? (<StyledBadge
+                                        overlap="circular"
+                                        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                                        variant="dot">
+                                        <Avatar alt={faker.name.fullName()}></Avatar>
+                                    </StyledBadge>) : (<Avatar alt={faker.name.fullName()}></Avatar>)
+                            }
                         </Box>
                         <Stack spacing={0.2}>
-                            <Typography variant="subtitle">{faker.name.fullName()}</Typography>
-                            <Typography variant="caption">Onligne</Typography>
+                            <Typography variant="subtitle">
+                                {current_conversation?.name}
+                            </Typography>
+                            <Typography variant="caption">Online</Typography>
                         </Stack>
                     </Stack>
                     <Stack direction={"row"} alignItems={"center"} spacing={3}>
-                        <IconButton>
-                            <PiVideoCamera />
-                        </IconButton>
-                        <IconButton>
-                            <BiPhone />
-                        </IconButton>
                         <IconButton>
                             <TbMessageSearch />
                         </IconButton>
@@ -198,11 +299,9 @@ const Conversation = () => {
                     </Stack>
                 </Stack>
             </Box>
-            {/* msg */}
-            <Box width={"100%"} sx={{ flexGrow: 1, height: "100%", overflowY: "scroll" }}>
+            <Box width={"100%"} sx={{ flexGrow: 1, height: "100%", overflowY: "scroll" }} ref={messageListRef}>
                 <Message />
             </Box>
-            {/* footer */}
             <Box
                 p={2}
                 sx={{
@@ -211,24 +310,32 @@ const Conversation = () => {
                     boxShadow: "0px 0px 2px rgba(0, 0, 0, 0.25)"
                 }}>
                 <Stack direction={"row"} alignItems={"center"} spacing={3} >
-                    {/* Chat input */}
                     <Stack sx={{ width: "100%" }}>
                         <Box sx={{ display: Displayemojis ? "inline" : "none", zIndex: 10, position: "fixed", bottom: 81, right: 100 }}>
-                            <Picker theme="dark" data={data} onEmojiSelect={console.log} />
+                            <Picker theme="light" data={data} onEmojiSelect={(emoji) => { handleEmojiClick(emoji.native); }} />
                         </Box>
-                        <ChatInput setDisplayemojis={setDisplayemojis} />
+                        <ChatInput
+                            inputRef={inputRef}
+                            value={value}
+                            setValue={setValue}
+                            openPicker={Displayemojis}
+                            setOpenPicker={setDisplayemojis}
+                            onSendMessage={handleSendMessage}
+                        />
                     </Stack>
                     <Box sx={{ height: 48, width: 48, backgroundColor: "#3D6091", borderRadius: 1.5 }}>
                         <Stack sx={{ height: "100%", width: "100%" }} alignItems={"center"} justifyContent={"center"}>
-                            <IconButton>
-                                <RiSendPlaneFill color="#fff" />
+                            <IconButton
+                                onClick={handleSendMessage} // Use the send message handler here as well
+                            >
+                                <PaperPlaneTilt color="#ffffff" />
                             </IconButton>
                         </Stack>
                     </Box>
                 </Stack>
             </Box>
         </Stack>
-    )
-}
+    );
+};
 
 export default Conversation;

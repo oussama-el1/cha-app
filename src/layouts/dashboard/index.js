@@ -13,7 +13,16 @@ import { useDispatch } from '../../redux/store'
 import { useSelector } from "react-redux";
 import { LogoutUser } from "../../redux/slices/auth";
 import { socket, connectSocket } from "../../socket";
-import { showSnackbar } from "../../redux/slices/app";
+import { showSnackbar, SelectConversation } from "../../redux/slices/app";
+import {
+  UpdateDirectConversation,
+  AddDirectConversation,
+  AddDirectMessage,
+  SetCurrentConversation
+} from "../../redux/slices/conversation";
+
+
+
 
 
 const getPath = (index) => {
@@ -52,10 +61,10 @@ const getMenuPaths = (index) => {
   }
 };
 
-
 const DashboardLayout = () => {
 
   const dispatch = useDispatch();
+  const user_id = window.localStorage.getItem("user_id")
   const {isLoggedIn} = useSelector((state) => state.auth);
   const theme = useTheme();
   const [selected, setSelected] = useState(0);
@@ -70,7 +79,11 @@ const DashboardLayout = () => {
     setAnchorEl(null);
   };
 
-  const user_id = window.localStorage.getItem("user_id")
+  const { conversations, current_conversation } = useSelector(
+    (state) => state.conversation.direct_chat
+  )
+
+
 
   useEffect(() => {
 
@@ -88,7 +101,44 @@ const DashboardLayout = () => {
         connectSocket(user_id)
       }
 
-      // "new_friend_request"
+      socket.on("new_message", (data) => {
+        const message = data.message;
+        console.log(current_conversation, data);
+        // check if msg we got is from currently selected conversation
+        if (current_conversation?.id === data.conversation_id) {
+          dispatch(
+            AddDirectMessage({
+              id: message._id,
+              type: "msg",
+              subtype: message.type,
+              message: message.text,
+              incoming: message.to === user_id,
+              outgoing: message.from === user_id,
+            })
+          );
+        }
+      });
+
+      socket.on("start_chat", (data) => {
+        console.log(data);
+        // add / update to conversation list
+        const existing_conversation = conversations.find(
+          (el) => el?.id === data._id
+        );
+        if (existing_conversation) {
+          // update direct conversation
+          dispatch(UpdateDirectConversation({ conversation: data }));
+        } else {
+          // add direct conversation
+          dispatch(AddDirectConversation({ conversation: data }));
+        }
+        dispatch(SelectConversation({ room_id: data._id }));
+
+        const current = conversations.find((el) => el?.id === data._id);
+        if (current) {
+          dispatch(SetCurrentConversation(current));
+        }
+      });
 
       socket.on("new_friend_request", (data) => {
         dispatch(
@@ -122,6 +172,8 @@ const DashboardLayout = () => {
       socket?.off("new_friend_request");
       socket?.off("request_accepted");
       socket?.off("request_sent");
+      socket?.off("start_chat");
+      socket?.off("new_message");
     };
 
   }, [isLoggedIn, socket]);
@@ -175,7 +227,7 @@ const DashboardLayout = () => {
                 el.index === selected ? (
                   <Box
                     sx={{
-                      backgroundColor: "#526D82",
+                      backgroundColor: "#3572EF",
                       borderRadius: 1.5,
                     }}
                   >
@@ -204,7 +256,7 @@ const DashboardLayout = () => {
                 selected === 3 ?
                   <Box
                     sx={{
-                      backgroundColor: "#526D82",
+                      backgroundColor: "#3572EF",
                       borderRadius: 1.5,
                     }}
                   >

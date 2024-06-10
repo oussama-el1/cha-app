@@ -173,7 +173,7 @@ const Footer = () => {
               }}
             >
               <Picker
-                theme={theme.palette.mode}
+                theme="light"
                 data={data}
                 onEmojiSelect={console.log}
               />

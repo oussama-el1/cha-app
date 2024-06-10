@@ -17,10 +17,12 @@ const initialState = {
     severity: null,
   },
 
-  users: [], // all users of app who are not friends and not requested yet
+  users: [],
   all_users: [],
-  friends: [], // all friends
-  friendRequests: [], // all friend requests
+  friends: [],
+  friendRequests: [],
+  room_id: null,
+  chat_type: null,
 };
 
 const slice = createSlice({
@@ -70,6 +72,10 @@ const slice = createSlice({
     updateFriendRequests(state, action) {
       state.friendRequests = action.payload.requests;
     },
+    selectConversation(state, action) {
+      state.chat_type = "individual";
+      state.room_id = action.payload.room_id;
+    },
   },
 });
 
@@ -90,6 +96,8 @@ export function UpdateSidebarType(type) {
 // Reducer
 export default slice.reducer;
 
+
+/* -------------------------- Actions -------------------------- */
 
 export const closeSnackBar = () => async (dispatch, getState) => {
   dispatch(slice.actions.closeSnackBar());
@@ -118,7 +126,6 @@ export function UpdateTab(tab) {
 }
 
 
-
 export function FetchUsers() {
   return async (dispatch, getState) => {
     await axios
@@ -141,7 +148,6 @@ export function FetchUsers() {
       });
   };
 }
-
 
 
 export function FetchFriends() {
@@ -194,11 +200,15 @@ export function FetchFriendRequests() {
 }
 
 
+export const SelectConversation = ({ room_id }) => {
+  return async (dispatch, getState) => {
+    dispatch(slice.actions.selectConversation({ room_id }));
+  };
+};
 
 
 
-
-
+/* User Profile */
 
 
 export const FetchUserProfile = () => {

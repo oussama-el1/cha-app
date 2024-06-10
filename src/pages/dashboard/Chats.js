@@ -1,16 +1,16 @@
-import { React, useState } from "react";
+import { React, useState, useEffect } from "react";
 import { Box, Typography, Stack, IconButton, InputBase, Button, Divider, Avatar, Badge } from "@mui/material";
 import { styled, alpha } from "@mui/material/styles"
-/* import { faker } from '@faker-js/faker'; */
-import { ChatList } from "../../data";
 import { IoIosCloseCircleOutline } from "react-icons/io";
-import { TbPinned } from "react-icons/tb";
 import { TbMessageCircleSearch } from "react-icons/tb";
 import { PiArchiveDuotone } from "react-icons/pi";
 import { Users } from "phosphor-react";
 import Friends from "../../sections/dashboard/Friends";
-
-
+import { SelectConversation } from "../../redux/slices/app";
+import { socket } from "../../socket";
+import { useDispatch, useSelector } from "react-redux";
+import { FetchDirectConversations } from "../../redux/slices/conversation";
+import { useTheme } from "@mui/material/styles";
 
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
@@ -42,13 +42,45 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
     },
 }));
 
+const StyledChatBox = styled(Box)(({ theme }) => ({
+    "&:hover": {
+        cursor: "pointer",
+    },
+}));
+
+
+const user_id = window.localStorage.getItem("user_id");
+
+
 const ChatElement = ({ id, name, img, msg, time, unread, online }) => {
+
+    const dispatch = useDispatch();
+    const theme = useTheme();
+    const {room_id} = useSelector((state) => state.app);
+    const selectedChatId = room_id?.toString();
+
+    let isSelected = +selectedChatId === id;
+
+    if (!selectedChatId) {
+        isSelected = false;
+    }
+
     return (
-        <Box sx={{
-            width: "100%",
-            borderRadius: 1,
-            backgroundColor: "#fff"
-        }}
+        <StyledChatBox
+            onClick={() => {
+                dispatch(SelectConversation({ room_id: id }))
+            }}
+            sx={{
+                width: "100%",
+                borderRadius: 1,
+                backgroundColor: isSelected
+                ? theme.palette.mode === "light"
+                    ? alpha(theme.palette.primary.main, 0.5)
+                    : theme.palette.primary.main
+                : theme.palette.mode === "light"
+                ? "#fff"
+                : theme.palette.background.paper,
+            }}
             p={2}
         >
             <Stack direction='row'
@@ -76,10 +108,10 @@ const ChatElement = ({ id, name, img, msg, time, unread, online }) => {
                     <Typography sx={{ fontWeight: 600 }} variant="caption">
                         {time}
                     </Typography>
-                    <Badge color="primary" badgeContent={99} />
+                    <Badge color="primary" badgeContent={unread} />
                 </Stack>
             </Stack>
-        </Box>
+        </StyledChatBox>
     )
 }
 
@@ -114,11 +146,20 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 
 
 
-
 const Chats = () => {
 
 
     const [openDialog, setOpenDialog] = useState(false);
+    const dispatch = useDispatch();
+
+    const { conversations } = useSelector((state) => state.conversation.direct_chat);
+
+    useEffect(() => {
+        socket.emit("get_direct_conversations", { user_id }, (data) => {
+            console.log(data);
+            dispatch(FetchDirectConversations({ conversations: data }));
+        });
+    }, []);
 
     const handleCloseDialog = () => {
         setOpenDialog(false);
@@ -127,8 +168,6 @@ const Chats = () => {
     const handleOpenDialog = () => {
         setOpenDialog(true);
     };
-
-
 
 
     return (
@@ -182,20 +221,10 @@ const Chats = () => {
                     <Stack spacing={2} direction={'column'} sx={{ flexGrow: 1, overflowX: "hidden", overflowY: "scroll", height: "100%", paddingInline: "8px" }}>
                         <Stack spacing={1.5}>
                             <Typography variant="subtitle2" sx={{ color: "#676767" }}>
-                                <TbPinned size={15} />  -   Pinned
-                            </Typography>
-                            {
-                                ChatList.filter((el) => el.pinned).map((el) => {
-                                    return <ChatElement {...el} />
-                                })
-                            }
-                        </Stack>
-                        <Stack spacing={1.5}>
-                            <Typography variant="subtitle2" sx={{ color: "#676767" }}>
                                 All Chats
                             </Typography>
                             {
-                                ChatList.filter((el) => !el.pinned).map((el) => {
+                                conversations.filter((el) => !el.pinned).map((el) => {
                                     return <ChatElement {...el} />
                                 })
                             }

@@ -27,6 +27,11 @@ import {
 } from "phosphor-react";
 import { useDispatch } from "react-redux";
 import { ToggleSidebar, UpdateSidebarType } from "../redux/slices/app";
+import { useSelector } from "react-redux";
+
+
+
+
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -84,6 +89,8 @@ const Contact = () => {
   const [openBlock, setOpenBlock] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
 
+  const { current_conversation } = useSelector((state) => state.conversation.direct_chat);
+
   const handleCloseBlock = () => {
     setOpenBlock(false);
   }
@@ -130,13 +137,12 @@ const Contact = () => {
         >
           <Stack alignItems="center" direction="row" spacing={2}>
             <Avatar
-              src={faker.image.avatar()}
               alt={faker.name.firstName()}
               sx={{ height: 64, width: 64 }}
             /> 
             <Stack spacing={0.5}>
               <Typography variant="article" fontWeight={600}>
-                {faker.name.firstName()}
+                { current_conversation?.name ? current_conversation?.name : " - " }
               </Typography>
               <Typography variant="body2" fontWeight={500}>
                 {"+91 62543 28 739"}
